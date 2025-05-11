@@ -5,6 +5,10 @@ const { redisClient } = require('../redis/redisClient');
 const messagePersistedHandler = require('../events/handlers/messagePersistedHandler');
 const userSubscriptionsHandler = require('../events/handlers/userSubscriprionsHandler');
 
+// message.new
+// user.connected
+// message.persisted
+// user.subscriptions
 
 const handlers = {
   'message.persisted': messagePersistedHandler,

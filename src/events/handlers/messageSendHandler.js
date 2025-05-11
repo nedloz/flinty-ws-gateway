@@ -12,7 +12,7 @@ async function handleMessageSend(ws, userId, payload) {
         reply_to: payload.reply_to || null,
     };
 
-    await produceKafkaMessage('message.send', message);
+    await produceKafkaMessage('message.new', message);
 }
 
 module.exports = handleMessageSend;

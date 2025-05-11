@@ -9,7 +9,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 const userSockets = new Map();
 
 wss.on('connection', (ws, req) => {
-    const userId = req.headers['user_id']; // ????
+    const userId = req.headers['x-user-id'];
     if (!userId) {
         ws.close();
         return;
