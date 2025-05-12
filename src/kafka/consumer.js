@@ -15,6 +15,8 @@ const handlers = {
   'user.subscriptions': userSubscriptionsHandler
 };
 
+
+// обработчик kafka событий
 async function setupKafkaConsumer(userSockets) {
   await consumer.connect();
   await consumer.subscribe({ topic: 'message.persisted', fromBeginning: false }) 
