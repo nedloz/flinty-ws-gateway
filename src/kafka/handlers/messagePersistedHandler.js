@@ -1,16 +1,19 @@
-const messagePersistedHandler = async ({ data, redisClient, userSockets }) => {
+const messagePersistedHandler = async ({ data, redis, userSockets }) => {
   const { sender_id, channel_id } = data;
 
+  if (!redis) {
+    throw new Error('Redis client is undefined in messagePersistedHandler');
+  }
   if (!channel_id || !sender_id) {
     console.warn('[message.persisted] Invalid payload:', data);
     return;
   }
 
   const usersKey = `channel:${channel_id}:users`;
-  const userIds = await redisClient.sMembers(usersKey);
+  const userIds = await redis.sMembers(usersKey);
 
   if (!userIds.length) {
-    console.log(`[message.persisted] No connected users in channel ${channel_id}`);
+    logger.log(`[message.persisted] No connected users in channel ${channel_id}`);
     return;
   }
 
@@ -21,7 +24,7 @@ const messagePersistedHandler = async ({ data, redisClient, userSockets }) => {
       try {
         socket.send(JSON.stringify({ type: eventType, payload: data }));
       } catch (err) {
-        console.warn(`Ошибка при отправке сообщения пользователю ${uid}:`, err.message);
+        logger.warn(`Ошибка при отправке сообщения пользователю ${uid}:`, err.message);
       }
     }
   });

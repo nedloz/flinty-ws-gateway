@@ -1,9 +1,11 @@
 const { Kafka } = require('kafkajs');
-const kafka = new Kafka({ brokers: ['localhost:9092'] });
-const consumer = kafka.consumer({ groupId: 'ws-gateway-group' });
-const { redisClient } = require('../redis/redisClient');
-const messagePersistedHandler = require('../events/handlers/messagePersistedHandler');
-const userSubscriptionsHandler = require('../events/handlers/userSubscriprionsHandler');
+const kafka = new Kafka({ brokers: [process.env.KAFKA_BROKER]});
+const consumer = kafka.consumer({ groupId: process.env.KAFKA_CLIENT_ID });
+const redis = require('../redis/redisClient');
+const messagePersistedHandler = require('./handlers/messagePersistedHandler');
+const userSubscriptionsHandler = require('./handlers/userSubscriprionsHandler');
+const logger = require('../events/utils/logger');
+const chatHistoryResHandler = require('./handlers/chatHistoryResHandler');
 
 // message.new
 // user.connected
@@ -12,15 +14,15 @@ const userSubscriptionsHandler = require('../events/handlers/userSubscriprionsHa
 
 const handlers = {
   'message.persisted': messagePersistedHandler,
-  'user.subscriptions': userSubscriptionsHandler
+  'user.subscriptions': userSubscriptionsHandler,
+  'chat.history.res': chatHistoryResHandler
 };
 
-
-// обработчик kafka событий
 async function setupKafkaConsumer(userSockets) {
   await consumer.connect();
-  await consumer.subscribe({ topic: 'message.persisted', fromBeginning: false }) 
+  await consumer.subscribe({ topic: 'message.persisted', fromBeginning: false });
   await consumer.subscribe({ topic: 'user.subscriptions', fromBeginning: false });
+  await consumer.subscribe({ topic: 'chat.history.res', fromBeginning: false });
 
   await consumer.run({
     eachMessage: async ({ topic, message }) => {
@@ -28,12 +30,14 @@ async function setupKafkaConsumer(userSockets) {
       const handler = handlers[topic];
       if (handler) {
         try {
-          await handler({ data, redisClient, userSockets });
+          await handler({ data, redis, userSockets });
         } catch (err) {
-          console.error(`Ошибка при обработке события ${topic}`, err);
+          // тут только остается сохранять все ошибки в логи тк мы не знаем 
+          // открыто ли до сих пор соединение с пользователем. 
+          logger.error(`Ошибка при обработке события ${topic}`, err);
         }
       } else {
-        console.warn(`Нет обработчика для топика: ${topic}`);
+        logger.warn(`Нет обработчика для топика: ${topic}`);
       }
     }
   });

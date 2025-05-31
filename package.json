@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./src/index.js",
   "scripts": {
-    "test": "node ./src/index.js"
+    "start": "node ./src/index.js"
   },
   "author": "nedloz",
   "license": "ISC",
@@ -11,6 +11,11 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "kafkajs": "^2.2.4"
+    "kafkajs": "^2.2.4",
+    "node-fetch": "^2.6.9",
+    "redis": "^5.1.1",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "ws": "^8.18.2"
   }
 }

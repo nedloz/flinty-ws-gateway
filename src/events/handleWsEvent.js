@@ -1,10 +1,13 @@
+const chatHistoryReqHandler = require('./handlers/chatHistoryReqHandler');
 const messageSendHandler = require('./handlers/messageSendHandler');
 const handleError = require('./utils/handleError');
+const logger = require('./utils/logger');
 
 const handlers = {
-    'message.send': messageSendHandler
+    'message.send': messageSendHandler,
     // 'message.update': 
     // 'message.delete':
+    'chat.history.req': chatHistoryReqHandler
 };
 // обработчик ws событий
 const handleEvent = async (ws, userId, data) => {
@@ -17,7 +20,7 @@ const handleEvent = async (ws, userId, data) => {
     try {
         await handler(ws, userId, payload);
     } catch (err) {
-        console.error(`Ошибка в обработке события ${type}: `, err); // logger
+        logger.error(`Ошибка в обработке события ${type}: `, err); // logger
         await handleError(ws, 'INTERNAL_ERROR', 'Произошла внутренняя ошибка')
     }
 }
